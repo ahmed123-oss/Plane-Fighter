@@ -14,31 +14,29 @@ meteorImage.src = 'meteor.png';  // تأكد من أن مسار صورة الن�
 const targetRadius = 30; // حجم الدائرة
 let plane = { 
     x: canvas.width / 2, 
-    y: canvas.height - 100, 
-    width: 80,  // زيادة حجم الطائرة
-    height: 80,  // زيادة حجم الطائرة
-    speed: 5, 
-    dx: 0, 
-    dy: 0 
+    y: canvas.height - 120, 
+    width: 100,  // زيادة حجم الطائرة
+    height: 100,  // زيادة حجم الطائرة
+    speed: 8, 
 };
 let bullets = [];
 let meteors = [];  // استبدال الكرات الحمراء بالنيازك
 let level = 1;
 let targetSpeed = 2; // سرعة حركة النيازك
-let planeSpeed = 10;
 let score = 0;  // إضافة متغير لتخزين النقاط
 let gameOver = false;
 let music = new Audio('background-music.mp3'); // تأكد من مسار موسيقى الخلفية
 let shootSound = new Audio('shoot-sound.mp3'); // تأكد من مسار صوت الإطلاق
 let crashSound = new Audio('crash-sound.mp3'); // صوت التصادم
+let keys = {}; // لتتبع المفاتيح
 
 // إنشاء النيازك
 function generateMeteors() {
     meteors = []; // إعادة تعيين النيازك في كل مرة
     for (let i = 0; i < level * 5; i++) { // زيادة عدد النيازك مع كل مستوى
-        let x = Math.random() * (canvas.width - 60);  // زيادة مساحة النيازك
+        let x = Math.random() * (canvas.width - 100);  // زيادة مساحة النيازك
         let y = -Math.random() * canvas.height;  // بداية النيازك من أعلى الشاشة
-        meteors.push({ x: x, y: y });
+        meteors.push({ x: x, y: y, size: 80 + Math.random() * 40 });
     }
 }
 
@@ -54,7 +52,6 @@ function startGame() {
 function increaseDifficulty() {
     level++;
     targetSpeed += 0.5;  // زيادة سرعة النيازك
-    planeSpeed += 0.5;    // زيادة سرعة الطائرة
     generateMeteors();  // إعادة توليد النيازك بعد تغيير المستوى
 }
 
@@ -81,7 +78,7 @@ function drawBullets() {
 // رسم النيازك
 function drawMeteors() {
     for (let meteor of meteors) {
-        ctx.drawImage(meteorImage, meteor.x, meteor.y, 110, 110);  // زيادة حجم النيزك
+        ctx.drawImage(meteorImage, meteor.x, meteor.y, meteor.size, meteor.size);  
     }
 }
 
@@ -91,7 +88,7 @@ function moveMeteors() {
         meteor.y += targetSpeed;
         if (meteor.y > canvas.height) {
             meteor.y = -60;  // إعادة النيزك لأعلى الشاشة إذا مر من الأسفل
-            meteor.x = Math.random() * (canvas.width - 60);  // زيادة مساحة النيازك
+            meteor.x = Math.random() * (canvas.width - 100);  
         }
     }
 }
@@ -113,7 +110,7 @@ function handleCollisions() {
         let dx = plane.x - meteor.x;
         let dy = plane.y - meteor.y;
         let distance = Math.sqrt(dx * dx + dy * dy);
-        if (distance < 60) {  // التصادم بين الطائرة والنيزك
+        if (distance < meteor.size / 2) {  // التصادم بين الطائرة والنيزك
             crashSound.play();
             gameOver = true;
             break;
@@ -126,7 +123,7 @@ function handleCollisions() {
             let dx = bullets[i].x - meteors[j].x;
             let dy = bullets[i].y - meteors[j].y;
             let distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance < 30) {  // التصادم بين الرصاصة والنيزك
+            if (distance < meteors[j].size / 2) {  // التصادم بين الرصاصة والنيزك
                 meteors.splice(j, 1);  // حذف النيزك
                 bullets.splice(i, 1);  // حذف الرصاصة
                 shootSound.play();
@@ -134,31 +131,25 @@ function handleCollisions() {
                 if (score % 50 === 0) {  // زيادة المستوى كل 50 نقطة
                     increaseDifficulty();
                 }
-                if (meteors.length === 0) {
-                    generateMeteors();  // إعادة توليد النيازك بعد تدمير جميع النيازك
-                }
                 break;
             }
         }
     }
 }
-
 // رسم السكور
 function drawScore() {
     ctx.fillStyle = 'white';
     ctx.font = '24px Arial';
-    ctx.fillText('Score: ' + score, 20, 30); // عرض السكور في أعلى الشاشة
+    ctx.fillText('Score: ' + score, 50, 30); // عرض السكور في أعلى الشاشة
 }
-
 // رسم المستوى
 function drawLevel() {
     ctx.fillStyle = 'white';
     ctx.font = '24px Arial';
-    ctx.textAlign = 'left';  // محاذاة النص لليمين
-    ctx.fillText('Level: ' + level, canvas.width - 1515, 60); // عرض المستوى في الزاوية العلوية اليمنى
+    ctx.textAlign = 'center';  // محاذاة النص في المنتصف
+    ctx.fillText('Level: ' + level, canvas.width - 365, 70); // عرض المستوى في الزاوية العلوية اليمنى
 }
 
-// تحديث اللعبة
 function gameLoop() {
     if (gameOver) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -172,21 +163,48 @@ function gameLoop() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);  // مسح الشاشة في كل مرة
     drawPlane();
     drawBullets();
-    drawMeteors();  // رسم النيازك
-    moveMeteors();  // تحريك النيازك
+    drawMeteors();
+    moveMeteors();
     moveBullets();
     handleCollisions();
     drawScore();
     drawLevel();
+    handleKeys();
     requestAnimationFrame(gameLoop);
 }
 
-// التحكم في حركة الطائرة
+// التعامل مع حركة الطائرة
+function handleKeys() {
+    if (keys['ArrowLeft'] || keys['a']) plane.x -= plane.speed;
+    if (keys['ArrowRight'] || keys['d']) plane.x += plane.speed;
+    if (keys['ArrowUp'] || keys['w']) plane.y -= plane.speed;
+    if (keys['ArrowDown'] || keys['s']) plane.y += plane.speed;
+}
+
+document.addEventListener('keydown', (e) => keys[e.key] = true);
+document.addEventListener('keyup', (e) => keys[e.key] = false);
+
+// دعم الأجهزة المحمولة
+canvas.addEventListener('touchstart', (e) => {
+    let touch = e.touches[0];
+    plane.x = touch.clientX - plane.width / 2;
+    plane.y = touch.clientY - plane.height / 2;
+    // إطلاق الرصاص عند لمس الشاشة
+    bullets.push({ x: plane.x + plane.width / 2, y: plane.y, speed: 5 });
+});
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    let touch = e.touches[0];
+    plane.x = touch.clientX - plane.width / 2;
+    plane.y = touch.clientY - plane.height / 2;
+});
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+
+// إضافة إطلاق الرصاص باستخدام زر الفضاء
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') plane.x -= planeSpeed;
-    if (e.key === 'ArrowRight') plane.x += planeSpeed;
-    if (e.key === 'ArrowUp') plane.y -= planeSpeed;
-    if (e.key === 'ArrowDown') plane.y += planeSpeed;
     if (e.key === ' ') {
         bullets.push({ x: plane.x + plane.width / 2, y: plane.y, speed: 5 });
     }
