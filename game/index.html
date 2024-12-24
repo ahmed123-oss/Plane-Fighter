@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fighter Plane Game - Home</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="plane.png">
+</head>
+<body>
+    <!-- إضافة الفيديو كخلفية -->
+    <video id="backgroundVideo" autoplay muted loop>
+        <source src="vedio.mp4" type="video/mp4">
+        متصفحك لا يدعم تشغيل الفيديو.
+    </video>
+    <audio  autoplay loop>
+        <source src="background-music.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- محتوى الصفحة -->
+    <div class="container">
+        <h1>Welcome to the Fighter Plane Game!</h1>
+        <p>Defeat the targets and advance through the levels.</p>
+        <button class="button" onclick="window.location.href='game.html'">Start Game</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
